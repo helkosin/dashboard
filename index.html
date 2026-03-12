@@ -1,27 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Node Controller</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
-        button { background: #0088cc; color: white; border: none; padding: 15px; margin: 10px; border-radius: 8px; width: 80%; }
+        body { 
+            background-color: #0e1621; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .container { display: none; } /* Hidden by default for security */
+        .btn {
+            background-color: #2481cc;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            margin: 10px 0;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-danger { background-color: #d9534f; }
+        h2 { color: #6ab3f3; }
     </style>
 </head>
 <body>
-    <h2>🚀 Lab Controller</h2>
-    <p id="pc-name">System: Checking...</p>
-    
-    <button onclick="sendCommand('screenshot')">🖥 Take Screenshot</button>
-    <button onclick="sendCommand('taskmgr')">📊 Refresh Tasks</button>
-    <button style="background: #cc0000;" onclick="sendCommand('shutdown')">🛑 Shutdown Node</button>
+    <div id="auth-error">
+        <h1>🔒 Access Denied</h1>
+        <p>This dashboard can only be accessed via the authorized Telegram Bot.</p>
+    </div>
+
+    <div id="main-ui" class="container">
+        <h2 id="user-greeting">Connecting...</h2>
+        <p>Target PC: <span id="pc-name">Scanning...</span></p>
+        
+        <button class="btn" onclick="sendCmd('screenshot')">🖥 Take Screenshot</button>
+        <button class="btn" onclick="sendCmd('taskmgr')">📊 Refresh Task Manager</button>
+        <button class="btn" onclick="sendCmd('ping')">📡 Test Connection</button>
+        <button class="btn btn-danger" onclick="sendCmd('shutdown')">🛑 Emergency Shutdown</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Opens the app to full height
 
-        function sendCommand(cmd) {
-            tg.sendData(cmd); // Sends the string back to your Python script
-            tg.close(); // Closes the app after sending
+        // Security Check: Verify if running inside Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('auth-error').style.display = 'none';
+            document.getElementById('main-ui').style.display = 'block';
+            document.getElementById('user-greeting').innerText = `Welcome, ${tg.initDataUnsafe.user.first_name}`;
+            tg.expand(); // Open to full height
+        }
+
+        function sendCmd(action) {
+            tg.sendData(action); // Sends the string to the Python script
+            tg.close(); // Closes Mini App after action
         }
     </script>
 </body>
